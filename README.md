@@ -1,2 +1,0 @@
-# transitions_javascript
-testing
