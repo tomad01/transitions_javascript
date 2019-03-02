@@ -1,0 +1,137 @@
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="graph"></div>
+  <button onclick="javascript:animateShuffle();">Make Transition</button>
+</body>
+
+<style>
+button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+}
+</style>
+
+<script>
+function shuffleInPlace(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+}
+
+function getXY(ref,rr){
+    var randomRadius = rr*Math.random();
+    var randomTheta  = 2*Math.PI*Math.random();
+    return {x:randomRadius*Math.cos(randomTheta)+ref.x,
+            y:randomRadius*Math.sin(randomTheta)+ref.y,}
+}
+</script>
+<script>
+//=================================================================================================
+    
+    
+var dataSample = [];
+    
+var classes = ['class1','class2','class3','class4','class5','class6','class7','class8','class9','class10','class11'];
+    
+    
+//////////////////////////////////////////////////////////////////////////////////////////////    
+var center = {x:0,y:0};
+    
+var radius = classes.length*2/3;
+var miniRadius = radius/6;
+var theta = 2*Math.PI / classes.length
+    
+var x_vals = [];
+var y_vals = [];
+var ids = [];
+var colors = [];
+var data = [];  
+var gcnt = 0;
+for (var i=0;i<classes.length;i++){
+    
+    x = radius*Math.cos(theta * i);
+    y = radius*Math.sin(theta * i);
+    x_vals.push(x);
+    y_vals.push(y);
+    ids.push(i.toString());
+    
+    color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6)
+    colors.push(color);
+    
+    var trace = {x:[],
+                 y:[],
+                 text:[],
+                 mode:'markers+text',
+                 textposition:'top center',
+                 textfont:{ family:'sans serif',size:7},
+                 hoverinfo: 'none',
+                 marker:{color:color,size:5,symbol:'triangle-right'}}
+    
+    for(var j=0;j<10;j++){
+       gcnt+=1;
+       var point = getXY({x:x,y:y},miniRadius); 
+       trace.x.push(point.x);
+       trace.y.push(point.y);
+       trace.text.push('person'+gcnt.toString());
+    }
+    data.push(trace);
+    
+}
+       
+    
+var center_trace = {
+  x: x_vals,
+  y: y_vals,
+  text:classes,
+  name:'Clusters centers',
+  mode:'markers+text',
+  hoverinfo: 'none',
+  marker:{size:100,color:colors,'opacity':.4},
+  ids: ids,
+  textposition:'top center',
+  textfont:{ family:'sans serif',size:18,color:colors}  
+};
+data.push(center_trace);
+    
+
+var layout = {
+  xaxis: {showgrid:false,zeroline:false,showline:false,showticklabels:false},
+  yaxis: {showgrid:false,zeroline:false,showline:false,showticklabels:false},
+        //'autosize': false,
+        'width': 900,
+        'height': 900,
+        'title':'Transitions dashboard',
+  showlegend:false
+};
+Plotly.plot('graph', data, layout, {responsive:true,showSendToCloud:true});
+
+function animateShuffle() {
+  //shuffleInPlace(ids);
+    var second_frame = []
+    for (var i=0;i<classes.length;i++){
+        var randomTransition = Math.floor(classes.length*Math.random());
+    
+        var trace = {x:[], y:[],                                          
+                     marker:{color:colors[randomTransition],size:5}}
+    
+        for(var j=0;j<10;j++){
+           var point = getXY({x:x_vals[randomTransition],y:y_vals[randomTransition]},miniRadius); 
+           trace.x.push(point.x);
+           trace.y.push(point.y);           
+        }        
+        second_frame.push(trace);    
+    }    
+    second_frame.push(center_trace);    
+    Plotly.animate('graph', [{data: second_frame}],{transition: {
+      duration: 9000,easing: 'linear'}}
+                  );
+}
+
+</script>
